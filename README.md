@@ -141,7 +141,7 @@ Your directory structure for the short read RNA-seq data should rougly
 follow this pattern:
 
 <pre>
-```
+```note:
 Chammim_Cha06_scaffold_6.fasta
 Chammim_Cha06_scaffold_6.gtf
 Sequencing_data/
@@ -197,6 +197,19 @@ Bacteria condition.
 
 Navigate to the folder containing the FASTQ files and run:
 
+<pre>
+```bash
+# Create an output folder for FastQC results
+mkdir results/fastqc
+
+# Run FastQC on two FASTQ files (example)
+fastqc \
+  Sequencing_data/Mock_vs_Bac/C3_2dpi_Mock//C3_2_M.Chammim_Cha06_scaffold_6.R1.mapped.fq.gz \
+  Sequencing_data/Mock_vs_Bac/C5_2dpi_Bac/C5_2_B.Chammim_Cha06_scaffold_6.R1.mapped.fq.gz \
+  -o results/fastqc
+```
+</pre>
+
 This command will generate .html and .zip report files for each input
 FASTQ.
 
@@ -206,6 +219,13 @@ You can open the .html files in your browser to inspect the results.
 
 Even though we only ran FastQC on two. (or more) files, we can still use
 MultiQC to compile the results into one easy-to-read summary:
+
+<pre>
+```bash
+#Create a MultiQC report
+multiqc results/fastqc -o results/QC_summary
+```
+</pre>
 
 **Questions:**
 
@@ -229,6 +249,22 @@ combine the reads for **Mock 2 dpi** (day post infection). After doing
 this successfully, please continue and generate the merged files for Bac
 2 dpi.
 
+<pre>
+```bash
+# Combine Mock 2dpi (R1)
+cat Sequencing_data/Mock_vs_Bac/C3_2dpi_Mock/*.R1.mapped.fq.gz \
+    Sequencing_data/Mock_vs_Bac/C4_2dpi_Mock/*.R1.mapped.fq.gz \
+    Sequencing_data/Mock_vs_Bac/C6_2dpi_Mock/*.R1.mapped.fq.gz \
+    > results/Mock_2dpi_all.R1.fq.gz
+
+# Combine Mock 2dpi (R2)
+cat Sequencing_data/Mock_vs_Bac/C3_2dpi_Mock/*.R2.mapped.fq.gz \
+    Sequencing_data/Mock_vs_Bac/C4_2dpi_Mock/*.R2.mapped.fq.gz \
+    Sequencing_data/Mock_vs_Bac/C6_2dpi_Mock/*.R2.mapped.fq.gz \
+    > results/Mock_2dpi_all.R2.fq.gz
+```
+</pre>
+
 Once complete, you should have **four merged FASTQ files**, two per
 condition (R1/R2).
 
@@ -247,6 +283,30 @@ generate a **SAM** file (Sequence Alignment Map). To make the SAM files
 smaller and easier to view in **IGV**, convert them to **sorted BAM**
 files and create index files. You can use samtools flagstat to quickly
 check mapping statistics:
+
+<pre>
+```bash
+# Go back to the main project folder
+# Build the HISAT2 index (creates 6 index files)
+hisat2-build Chammim_Cha06_scaffold_6.fasta Chammim_Cha06_scaffold_6_index
+
+# Run HISAT2 mapping for each condition 
+hisat2 --max-intronlen 2000 -x Chammim_Cha06_scaffold_6_index \
+  -1 results/Mock_2dpi_all.R1.fq.gz  \
+  -2 results/Mock_2dpi_all.R2.fq.gz \
+  -S results/Mock_2dpi_all.sam
+
+# Convert and sort
+samtools view -bS results/Mock_2dpi_all.sam | samtools sort -o results/Mock_2dpi_all.sorted.bam
+
+# Index the BAM files
+samtools index results/Mock_2dpi_all.sorted.bam
+
+# Optional: quick alignment summary
+samtools flagstat results/Mock_2dpi_all.sorted.bam
+
+```
+</pre>
 
 **Questions**:
 
@@ -273,6 +333,28 @@ junctions and to identify alternative splice variants. For cDNA
 noisy long reads.
 
 Map Nanopore cDNA reads with minimap2 (recommended preset for ONT cDNA):
+<pre>
+```bash
+# create results dir
+mkdir -p results/nanopore_map
+
+# variables (edit to match your filenames)
+REF=Chammim_Cha06_scaffold_6.fasta 
+FASTQ=Sequencing_data/Nanopore_cDNA/Cha06_nodules_cDNA_1.Chammim_Cha06_scaffold_6.mapped.fastq.gz
+OUTSAM=results/nanopore_map/Cha06_nodules_cDNA_1.sam
+OUTBAM=results/nanopore_map/Cha06_nodules_cDNA_1.sorted.bam
+
+# mapping: spliced alignment suitable for ONT cDNA
+minimap2 -t 4 -ax splice -uf -k14 "$REF" "$FASTQ" > "$OUTSAM"
+
+# convert, sort and index
+samtools view -@4 -bS "$OUTSAM" | samtools sort -@4 -o "$OUTBAM"
+samtools index "$OUTBAM"
+
+# quick summary
+samtools flagstat "$OUTBAM" > results/nanopore_map/Cha06_nodules_cDNA_1.flagstat.txt
+```
+</pre>
 
 Why these options?
 
@@ -315,6 +397,12 @@ from, and estimates transcript counts and expression levels.
 Kallisto needs an index of the transcriptome FASTA file, which contains
 the nucleotide sequences of all transcripts. This only needs to be built
 once.
+<pre>
+```bash
+# Build Kallisto index from transcript sequences
+kallisto index -i Chammim_transcripts.idx Chammim_Cha06_scaffold_6.transcripts.fasta 
+```
+</pre>
 
 #### Run quantification for each sample
 
@@ -322,10 +410,28 @@ Each quantification run will take the paired-end FASTQ files for a
 sample and output estimated transcript counts and TPM values
 (Transcripts Per Million).
 
-Here’s an example for C1\_2dpi\_Bac.
-
+Here’s an example for C1_2dpi_Bac.
 After you’ve successfully run this example, repeat for the other
 samples.
+<pre>
+```bash
+#First lets create a new output directory to save our results in
+mkdir results/kallisto_out
+
+kallisto quant \
+  -i Chammim_transcripts.idx \
+  -o results/kallisto_out/C10_1dpi_Mock \
+  -b 100 \
+Sequencing_data/Mock_vs_Bac/C1_2dpi_Bac/C1_2_B.Chammim_Cha06_scaffold_6.R1.mapped.fq.gz \
+Sequencing_data/Mock_vs_Bac/C1_2dpi_Bac/C1_2_B.Chammim_Cha06_scaffold_6.R2.mapped.fq.gz
+```
+</pre>
+
+🔹 Options explained:
+-i → specifies the Kallisto index file
+-o → output folder (Kallisto will create this automatically)
+-b 100 → performs 100 bootstrap replicates to estimate quantification uncertainty
+	The two FASTQ files are paired-end reads (R1 and R2)
 
 ## 5. Differential Expression Analysis (DESeq2) and visualization in R
 
