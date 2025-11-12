@@ -15,12 +15,10 @@ of the full genome — sufficient to explore key transcriptomic principles
 without the computational overhead of whole-genome analysis.
 
 In the underlying experiment, Chamaecrista roots were grown under two
-conditions:
-
--   Mock-treated roots (control)
-
+conditions:  
+-   Mock-treated roots (control)  
 -   Bacteria-treated roots, where symbiotic bacteria were applied to
-    induce early infection responses
+    induce early infection responses  
 
 This setup mimics the initial stages of a symbiotic interaction between
 legumes and nitrogen-fixing bacteria. Such interactions can lead to
@@ -54,11 +52,9 @@ interpretation questions along the way.
 
 **Before You Begin**
 
-This exercise assumes you have:
-
-• A working WSL (Windows Subsystem for Linux) setup or similair
-
-• Conda installed and a basic familiarity with using it
+This exercise assumes you have:  
+• A working WSL (Windows Subsystem for Linux) setup or similair  
+• Conda installed and a basic familiarity with using it  
 
 We’ll start by creating a conda environment and installing the required
 tools (e.g. hisat2, minimap2, samtools, kallisto, etc.). You can name
@@ -72,23 +68,22 @@ the environment whatever you like — for example, rna\_practical.
     # Optional: use mamba instead of conda if available
     # mamba create -n rna_practical -y hisat2 minimap2 samtools fastqc multiqc kallisto pigz
 ```
+
 Also:
-	Download and install IGV (desktop): https://software.broadinstitute.org/software/igv/
+	Download and install IGV (desktop): https://software.broadinstitute.org/software/igv/  
 	and R & Rstudio: https://posit.co/download/rstudio-desktop/
 	
 ## 1. Data and Directory Setup
 
 For this practical, a dummy dataset has been prepared for you.
-
+**You can find 2 zip files on Canvas called Practical_RNAseq_DATA.zip and Practical_RNAseq_results.zip**
 After downloading it, extract the ZIP file — this will set up all the
 data needed for the exercises in this session.
 
 Inside, you’ll find a subset of the Chamaecrista mimosoides genome
-focused on a single scaffold:
-
-• Genome sequence: Chammim\_Cha06\_scaffold\_6.fasta
-
-• Annotation file: Chammim\_Cha06\_scaffold\_6.gtf
+focused on a single scaffold:  
+• Genome sequence: Chammim\_Cha06\_scaffold\_6.fasta  
+• Annotation file: Chammim\_Cha06\_scaffold\_6.gtf  
 
 • (You may also see a file named Chammim\_Cha06\_scaffold\_6.fasta.fai —
 this is just an index file used by mapping tools. You don’t need to load
@@ -99,21 +94,16 @@ Let’s start by getting familiar with the data.
 Open IGV (Integrated Genomics Viewer) and load the genome and annotation
 files:
 
-1\. Load the genome:
-
-• Go to Genomes → Load Genome from File…
-
+1\. Load the genome:  
+• Go to Genomes → Load Genome from File…  
 Select Chammim\_Cha06\_scaffold\_6.fasta
 
-2\. Load the annotation (and later the BAM or other tracks):
-
-• Go to File → Load from File…
-
-Select Chammim\_Cha06\_scaffold\_6.gtf
+2\. Load the annotation (and later the BAM or other tracks):  
+• Go to File → Load from File…  
+Select Chammim\_Cha06\_scaffold\_6.gtf  
 
 Once loaded, you should see the annotated genes displayed along the
-scaffold.
-
+scaffold.  
 If you zoom in far enough, you’ll even be able to view the individual
 base pairs of the sequence.
 
@@ -122,22 +112,19 @@ base pairs of the sequence.
 The toy dataset represents a small-scale version of a real RNA-seq
 experiment investigating root nodulation in Chamaecrista.
 
-It includes two treatments at two time points:
-
-• Mock: untreated control roots
-
-• Bacteria: roots inoculated with nitrogen-fixing bacteria
+It includes two treatments at two time points:  
+• Mock: untreated control roots  
+• Bacteria: roots inoculated with nitrogen-fixing bacteria  
 
 Each folder in the dataset corresponds to one biological replicate and
 treatment condition.
 
-Samples are labeled using this convention:
-
 💡 Tip: make sure that you are in the working directory where your data
 is stored you can go there by typing cd /path/to/where/you/want/tobe
 
+Samples are labeled using this convention:  
 Your directory structure for the short read RNA-seq data should rougly
-follow this pattern:
+follow this pattern:  
 
 <pre>
 ```NOTE: (just and example of the directory structure: DO not copy and paste into terminal)
@@ -159,14 +146,11 @@ Sequencing_data/
 Each folder in the dataset corresponds to one biological replicate and
 treatment condition.
 
-Samples are labeled using this convention:
-
--   Cxx = sample number
-
--   2dpi = days post infection
-
+Samples are labeled using this convention:  
+-   Cxx = sample number  
+-   2dpi = days post infection  
 -   Mock = untreated roots or Bacteria = inoculated roots
-
+  
 💡 Tip: If any step fails or not complete on time or you encounter issues
 running the commands, you can download the Results.zip file, which
 contains all the output files generated throughout the practical. This
@@ -182,17 +166,15 @@ Quality control helps identify problems such as low-quality bases,
 adapter contamination, or uneven GC content, which can affect downstream
 analyses.
 
-We’ll use:
-
-• FastQC — to assess the quality of raw FASTQ files
-
+We’ll use:  
+• FastQC — to assess the quality of raw FASTQ files  
 • MultiQC — to summarize all FastQC reports into a single overview
 
 #### Run FastQC
 
 To save time, we’ll only run FastQC on two representative sampels (R1
 and/or R2) — for example, one from the Mock condition and one from the
-Bacteria condition.
+Bacteria condition.  
 
 Navigate to the folder containing the FASTQ files and run:
 
@@ -222,11 +204,9 @@ MultiQC to compile the results into one easy-to-read summary:
 multiqc results/fastqc -o results/QC_summary
 ```
 
-**Questions:**
-
+**Questions:**  
 -   What is the average per-base sequence quality across samples?  
-    Are there any adapter content issues?
-
+    Are there any adapter content issues?  
 -   If this would be your dataset what would you have trimmed or
     removed?
 
@@ -299,18 +279,13 @@ samtools flagstat results/Mock_2dpi_all.sorted.bam
 
 ```
 
-**Questions**:
-
-1.  What is the overall alignment rate?
-
+**Questions**:  
+1.  What is the overall alignment rate?  
 2.  Compare across samples. Are the rates roughly similar, or do some
-    align much better?
-
+    align much better?  
 3.  (Remember: we are mapping only to one scaffold, not the entire
-    genome.)
-
-4.  Are there noticeable differences between Mock and Bac samples?
-
+    genome.)  
+4.  Are there noticeable differences between Mock and Bac samples?  
 5.  Does one treatment show more or fewer mapped reads? What might that
     suggest about gene activity?
 
@@ -346,32 +321,26 @@ samtools index "$OUTBAM"
 samtools flagstat "$OUTBAM" > results/nanopore_map/Cha06_nodules_cDNA_1.flagstat.txt
 ```
 
-Why these options?
-
+Why these options?  
 -   -ax splice — spliced alignment mode (finds introns / exon
-    junctions).
-
+    junctions).  
 -   -uf -k14 — recommended for noisy long reads (u = long-reads, f = use
     forward-strand heuristics for cDNA; k14 lowers minimizer k to
-    improve sensitivity).
-
+    improve sensitivity).  
 -   -t 4 — use 4 threads (increase for faster runs if you have more
-    CPUs).
+    CPUs).  
 
 Adjust -k/-uf if your reads are higher quality (e.g., use default -x
 splice or -ax splice:hq for very high-quality (Q&gt;Q) reads).
 
 1.  How many Nanopore reads mapped to scaffold 6? What is the overall
-    mapping rate? (use flagstat)
-
+    mapping rate? (use flagstat)  
 2.  Pick one gene with multiple splice isoforms in IGV: how many
     distinct full-length isoforms are supported by single Nanopore
-    reads?
-
+    reads?  
 3.  Are there splice junctions detected by minimap2 in the long reads
     that are not supported by short-read junctions? (possible novel
-    isoforms)
-
+    isoforms)  
 4.  If you see many inconsistent or low-quality mappings, which minimap2
     options might you change to improve mapping sensitivity or
     specificity? (hint: presets like -ax splice:hq or changing -k).
@@ -402,6 +371,7 @@ sample and output estimated transcript counts and TPM values
 Here’s an example for C1_2dpi_Bac.
 After you’ve successfully run this example, repeat for the other
 samples.
+
 ```bash
 #First lets create a new output directory to save our results in
 mkdir results/kallisto_out
@@ -414,11 +384,11 @@ Sequencing_data/Mock_vs_Bac/C1_2dpi_Bac/C1_2_B.Chammim_Cha06_scaffold_6.R1.mappe
 Sequencing_data/Mock_vs_Bac/C1_2dpi_Bac/C1_2_B.Chammim_Cha06_scaffold_6.R2.mapped.fq.gz
 ```
 
-🔹 Options explained:
--i → specifies the Kallisto index file
--o → output folder (Kallisto will create this automatically)
--b 100 → performs 100 bootstrap replicates to estimate quantification uncertainty
-	The two FASTQ files are paired-end reads (R1 and R2)
+🔹 Options explained:  
+-i → specifies the Kallisto index file  
+-o → output folder (Kallisto will create this automatically)  
+-b 100 → performs 100 bootstrap replicates to estimate quantification uncertainty  
+	The two FASTQ files are paired-end reads (R1 and R2)  
 
 ## 5. Differential Expression Analysis (DESeq2) and visualization in R
 
@@ -437,39 +407,29 @@ C1–C4; by giving C5 and C6 the same pair ID we allow DESeq2 to
 explicitly account for that pairing and remove some unwanted
 variability.
 
-There are two analysis models that are helpful here:
-
+There are two analysis models that are helpful here:  
 -   Simple model: \~ condition — tests Bac vs Mock without accounting
-    for other factors.
-
+    for other factors.  
 -   Paired model: \~ pair + condition — includes a pair (blocking)
     factor so DESeq2 can control for paired measurements or
     harvest/batch differences.
-
+    
 1.  Run the provided R script (or RStudio notebook) that imports
-    Kallisto outputs and runs the two DESeq2 models.
-
+    Kallisto outputs and runs the two DESeq2 models.  
 2.  What is pseudo-mapping and how does it differ from normal mapping of
-    reads?
-
-3.  Inspect the PCA plot:
-
+    reads?  
+3.  Inspect the PCA plot:  
     -   Do samples separate by condition (Bac vs Mock) or by harvest
-        (early vs late)?
-
+        (early vs late)?  
     -   What does the observed clustering tell you about potential batch
-        or harvest effects?
-
+        or harvest effects?  
 4.  Compare the number of significantly up-regulated and down-regulated
     genes between the simple and paired analyses (use thresholds: padj
-    &lt; 0.05 and \|log2FC\| &gt; 1):
-
+    &lt; 0.05 and \|log2FC\| &gt; 1):  
     -   Does pairing increase or decrease the number of significant
-        genes?
-
+        genes?   
     -   Why might that happen (hint: think about variance explained by
-        pair)?
-
+        pair)?    
     -   Decide which model you trust more to call genes affected by
         treatment, given that C5 and C6 were harvested at a different
-        time. Explain briefly in one sentence.
+        time. Explain briefly in one sentence.  
