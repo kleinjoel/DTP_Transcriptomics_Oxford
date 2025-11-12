@@ -64,6 +64,19 @@ We’ll start by creating a conda environment and installing the required
 tools (e.g. hisat2, minimap2, samtools, kallisto, etc.). You can name
 the environment whatever you like — for example, rna\_practical.
 
+<pre>
+```bash
+    # Create environment and install tools
+    conda create -n rna_practical -y hisat2 minimap2 samtools fastqc multiqc kallisto pigz
+    conda activate rna_practical
+
+    # Optional: use mamba instead of conda if available
+    # mamba create -n rna_practical -y hisat2 minimap2 samtools fastqc multiqc kallisto pigz
+    Download and install IGV (desktop): https://software.broadinstitute.org/software/igv/
+    Download and install R & Rstudio: https://posit.co/download/rstudio-desktop/
+```
+</pre>
+
 ## 1. Data and Directory Setup
 
 For this practical, a dummy dataset has been prepared for you.
