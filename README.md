@@ -140,6 +140,23 @@ is stored you can go there by typing cd /path/to/where/you/want/tobe
 Your directory structure for the short read RNA-seq data should rougly
 follow this pattern:
 
+<pre>
+```
+Chammim_Cha06_scaffold_6.fasta
+Chammim_Cha06_scaffold_6.gtf
+Sequencing_data/
+  Mock_vs_Bac/
+    ├── C3_2dpi_Mock
+    │   ├── C3_2_M.Chammim_Cha06_scaffold_6.R1.mapped.fq.gz
+    │   └── C3_2_M.Chammim_Cha06_scaffold_6.R2.mapped.fq.gz
+    ├── C5_2_Bac
+    │   ├── C5_2_M.Chammim_Cha06_scaffold_6.R1.mapped.fq.gz
+    │   └── C5_2_M.Chammim_Cha06_scaffold_6.R2.mapped.fq.gz
+  Nanopore_cDNA/
+    └── Cha06_nodules_cDNA_1.Chammim_Cha06_scaffold_6.mapped.fastq
+```
+</pre>
+
 Each folder in the dataset corresponds to one biological replicate and
 treatment condition.
 
